@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<sub-flow name="RetrieveCommissionByOrderID_SubFlow" doc:id="07c54f2e-f2fd-4db6-a75c-ca9f63f3e256">
+		<logger level="DEBUG" doc:name="Logging Order Id for Commission Retrieval" doc:id="00a26802-0ff2-43e1-9972-4c94e1605dc8" message='#["Retrieving Commission Details. OrderId: " ++ vars.orderId]' />
+		<ee:transform doc:name="Retrieve Commission Query" doc:id="9b4d6cbc-87dc-400b-866f-f6a23833d974" >
+			<ee:message >
+				<ee:set-payload resource="dataweaves/retrieveCommissionSelectQuery.dwl" />
+			</ee:message>
+		</ee:transform>
+		<db:query-single doc:name="Query CommissionTable with OrderId" doc:id="e7e2013b-2b9e-46d6-91ba-b0268f5515d1" config-ref="Database_Config" queryTimeout="${db.queryTimeout}">
+			<db:sql><![CDATA[#[payload]]]></db:sql>
+		
+</db:query-single>
+		<set-variable value="#[if(not isEmpty(payload)) 200 else 500]" doc:name="httpStatus" doc:id="fbfa8d3f-2126-46ef-8202-18c7fcd95f16" variableName="httpStatus" />
+		<ee:transform doc:name="Response Transformation" doc:id="8a6a0f95-111e-4b6f-a786-2e034d3d35f1">
+			<ee:message>
+				<ee:set-payload resource="dataweaves/retrieveCommissionResponseTransformation.dwl" />
+			
+</ee:message>
+		</ee:transform>
+	
+	</sub-flow>
+	<sub-flow name="InsertCommission_SubFlow" doc:id="a52e98ec-0417-4b10-8dec-4f31ebe89922" >
+		<ee:transform doc:name="Order Commission - Bulk DB Insertion Request" doc:id="e4b5e1aa-ddd7-436c-b614-163dc18d5261">
+			<ee:message>
+				<ee:set-payload resource="dataweaves/InsertCommissionsRequestTransformations.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="DEBUG" doc:name="Number of Rows to be Inserted" doc:id="a756821c-db64-4ba2-8aa3-961a8c152ede" message='#["Number of Rows for Order_Commission Table inserted is " ++ sizeOf(payload) as String]'/>
+		<db:bulk-insert doc:name="Insert Order Commissions" doc:id="4f330dcc-e3b5-451c-b869-962ffa7f5afa" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO ${db.schema}.${db.table.orderCommissions} (ORDER_ID, ORDER_VALUE, REGION_CD, COMMISSION_AMOUNT) VALUES (:ORDER_ID, :ORDER_VALUE, :REGION_CD, :COMMISSION_AMOUNT)]]></db:sql>
+		</db:bulk-insert>
+		<logger level="DEBUG" doc:name="Order Commission Insertion Successful" doc:id="34108393-e1fd-4410-a53c-b66b2d303845" message="Order Commission Insertion Successful."/>
+		<set-payload value='#[""]' doc:name="Set Payload" doc:id="dd3292ca-be45-48d8-a5cb-c1659d4a7c9f" />
+	</sub-flow>
+</mule>

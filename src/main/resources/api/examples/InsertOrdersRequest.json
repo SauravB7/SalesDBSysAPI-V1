@@ -1,0 +1,16 @@
+{
+    "orders": [
+        {
+            "orderId": "47770eb9100c2d0c44946d9cf07ec65d",
+            "customerId": "41ce2a54c0b03bf3443c3d931a367089",
+            "orderStatus": "Shipped",
+            "purchaseTimestamp": "08-08-2018 08:38:49",
+            "approvedAt": "08-08-2018 08:55:23",
+            "deliveredCarrierDate": "08-08-2018",
+            "deliveredCustomerDate": "08-17-2018",
+            "estimatedDelivery": "09-04-2018",
+            "orderValue": 1448,
+            "regionCd": "ASIA"
+        }
+    ]
+}

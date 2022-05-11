@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<sub-flow name="InsertOrderItems_SubFlow" doc:id="7e406035-b7bb-49b6-8fa2-1635ffce38a1" >
+		<ee:transform doc:name="Order Items Request Transformation" doc:id="db6be87d-9af4-447b-9145-2ae19aa28c19" >
+			<ee:message >
+				<ee:set-payload resource="dataweaves/InsertOrderItemsRequestTransformation.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="DEBUG" doc:name="Number of rows to be Inserted" doc:id="7df3ce3e-d3bc-40aa-a36b-27ad7431fcd6" message='#["Number of Rows for Order_Items Table inserted is " ++ sizeOf(payload) as String]'/>
+		<db:bulk-insert doc:name="Insert Order Items" doc:id="68b6cb6c-a0bd-46ed-92ba-afb0d1879375" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO ${db.schema}.${db.table.orderItems} (ORDER_ID, PRODUCT_ID, ITEM_QUANTITY, SELLER_ID, PRICE, FREIGHT_VALUE, SHIPPING_LIMIT_DT) VALUES (:ORDER_ID, :PRODUCT_ID, :ITEM_QUANTITY, :SELLER_ID, :PRICE, :FREIGHT_VALUE, TO_DATE(:SHIPPING_LIMIT_DT, 'mm/dd/yyyy'))]]></db:sql>
+		</db:bulk-insert>
+		<logger level="DEBUG" doc:name="Order Items Insertion Successful." doc:id="91b75dbe-08e4-4415-b893-4e5060ce34b6" message="Order Items Insertion Successful."/>
+		<set-payload value='#[""]' doc:name="Set Payload" doc:id="9cd6ef8e-5b5f-4ed8-9dc7-31f509ad1a5a" />
+	</sub-flow>
+	<sub-flow name="RetrieveOrderItemsByOrderID_SubFlow" doc:id="98bde0f1-bfb9-4d07-801a-c192c8ff3c75" >
+		<logger level="DEBUG" doc:name="Retrieve Order Items for OrderId" doc:id="47119ebe-b6c4-4b15-92eb-7a702291b92b" message='#["Retrieve Order Items for OrderId: " ++ vars.orderId]'/>
+		<db:select doc:name="Retrieve Order Items for Order ID" doc:id="4c586984-3982-4bc7-8048-3af05068ae7a" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM ${db.schema}.${db.table.orderItems} WHERE ORDER_ID = :orderId]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	orderId: vars.orderId
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Response Transformation" doc:id="4ba1a6b0-699b-416b-b0fc-f1e8ccac0755" >
+			<ee:message >
+				<ee:set-payload resource="dataweaves/RetrieveItemsResponseTransformation.dwl" />
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[if(not isEmpty(payload)) 200 else 201]" doc:name="httpStatus" doc:id="d82768f6-ab70-4c73-9c71-b7f5ace9cce1" variableName="httpStatus"/>
+	</sub-flow>
+</mule>

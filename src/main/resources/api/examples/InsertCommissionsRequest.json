@@ -1,0 +1,9 @@
+{
+    "commissions": [{
+            "orderId": "ORD12345",
+            "regionCd": "APAC",
+            "orderValue": 1448,
+            "commissionAmount": 144.8
+        }
+    ]
+}

@@ -1,0 +1,66 @@
+#%RAML 1.0
+title: SalesDBSysAPI
+version: V1
+
+traits:
+  securedByClientId: !include traits/SecuredByClientID.yml
+  standardErrors: !include traits/StandardErrors.yml
+  
+/commissions:
+  description: Insert Commission details for Orders
+  post:
+    displayName: Create Commissions
+    description: Insert Commission details for Orders
+    is: [securedByClientId, standardErrors]
+    body:
+      application/json:
+        example: !include examples/InsertCommissionsRequest.json
+
+/orders:
+  description: Insert Multiple Orders to Database
+  post:
+    displayName: Create Orders
+    description: Insert Multiple Orders to Database
+    is: [securedByClientId, standardErrors]
+    queryParameters:
+      orderType:
+        enum: [online, offline]
+        type: string
+        required: true
+    body:
+      application/json:
+        example: !include examples/InsertOrdersRequest.json
+
+/orderItems:
+  description: Insert Items present in Orders to Database
+  post:
+    displayName: Insert Order Item Details
+    description: Insert Multiple Order Item Details to Database
+    is: [securedByClientId, standardErrors]
+    body:
+      application/json:
+        example: !include examples/InsertOrderItemsRequest.json
+    
+/order/{orderId}:
+  description: Retrieve or Update Order and Commission Details using Order Id
+  get:
+    displayName: Retrieve Order, Order Items, Commissions
+    description: Retrieve Order, Order Items and Commission Details using Order Id
+    is: [securedByClientId, standardErrors]
+    queryParameters:
+      operation:
+        enum: [retrieveOrder, retrieveCommission, retrieveItems]
+        type: string
+        required: true
+      orderType:
+        enum: [online, offline]
+        type: string
+        required: false
+    responses:
+      200:
+        body:
+          application/json:
+            examples: 
+              retrieveOrder: !include examples/RetrieveOrderResponse.json
+              retrieveCommission: !include examples/RetrieveCommissionResponse.json
+              retrieveItems: !include examples/RetrieveOrderItemsResponse.json

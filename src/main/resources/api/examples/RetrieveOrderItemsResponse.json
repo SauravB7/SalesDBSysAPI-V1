@@ -1,0 +1,21 @@
+{
+    "orderItems": {
+          "orderId": "ORD12345",
+          "items": [{
+                  "productId": "PRD12345",
+                  "itemQty": 2,
+                  "sellerId": "SEL12345",
+                  "shippingLimitDate": "05/24/2022",
+                  "pricePerItem": 45,
+                  "freightValue": 12
+              }, {
+                  "productId": "PRD12345",
+                  "itemQty": 2,
+                  "sellerId": "SEL12345",
+                  "shippingLimitDate": "05/24/2022",
+                  "pricePerItem": 67,
+                  "freightValue": 13
+              }
+          ]
+      }
+}

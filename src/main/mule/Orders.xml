@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="RetrieveOrderByOrderID_SubFlow" doc:id="af25c768-3c2a-4deb-9fed-ba0961055fd9" >
+		<set-variable value="#[attributes.queryParams.orderType]" doc:name="orderType" doc:id="f9128492-0f68-4591-88ac-469db5983933" variableName="orderType"/>
+		<ee:transform doc:name="Query Transformation" doc:id="2332fbe3-a3b0-4edf-9f56-d32f9c73e334" >
+			<ee:message >
+				<ee:set-payload resource="dataweaves/retrieveOrderSelectQuery.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="DEBUG" doc:name="Logging Order Id for Online Order Type" doc:id="602742a2-9ef4-4c07-b097-24bf58f9c4a1" message='#["Retrieving Order Details. OrderId: " ++ vars.orderId ++ ", OrderType: " ++ vars.orderType]' />
+		<choice doc:name="Choice" doc:id="be428c8e-90ef-40c8-9e28-daa8158c226b">
+			<when expression="#[not isEmpty(payload)]">
+		<db:query-single doc:name="Query Order Table with OrderId" doc:id="e241999b-50f2-4710-921d-0a3de0d8c687" config-ref="Database_Config" queryTimeout="${db.queryTimeout}">
+			<db:sql><![CDATA[#[payload]]]></db:sql>
+		</db:query-single>
+				<set-variable value="#[if(not isEmpty(payload)) 200 else 201]" doc:name="httpStatus" doc:id="ab6b9781-c165-47b1-afde-9009b0b9dcab" variableName="httpStatus" />
+				<ee:transform doc:name="Response Transformation" doc:id="5f4007fd-1a29-4138-b9a3-0ff13ccd0513">
+			<ee:message>
+				<ee:set-payload resource="dataweaves/retrieveOrderResponseTransformation.dwl" />
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Error Response Transformation" doc:id="a74a5ada-5ba4-49fc-9634-fb53f64305d0">
+					<ee:message>
+						<ee:set-payload resource="dataweaves/retrieveOrderErrorTransformation.dwl" />
+					</ee:message>
+				</ee:transform>
+				<set-variable value="500" doc:name="httpStatus" doc:id="8d20339f-a5b7-42c3-9c9f-52670e841faa" variableName="httpStatus" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="CreateOrders_SubFlow" doc:id="29fab196-44ed-4547-8ca6-549a78eb4e06" >
+		<set-variable value="#[attributes.queryParams.orderType]" doc:name="orderType" doc:id="2474d6f8-8779-4bed-b058-4baad3e3c093" variableName="orderType"/>
+		<ee:transform doc:name="Segregate based on OrderType" doc:id="a343c564-d7b3-47ea-8435-95bcd2d6c36d" >
+			<ee:message >
+				<ee:set-payload resource="dataweaves/SegregateBasedOnOrderType.dwl" />
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Query Transformation" doc:id="826ca5ff-bdc4-4ef7-8c99-16124a6ccd3a" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable resource="dataweaves/OrderInsertionQueryTransformation.dwl" variableName="dbQuery" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="DEBUG" doc:name="No of Orders Received" doc:id="c2ac80ff-efd2-47c5-b783-8de1135b1b3b" message='#["No. of " ++ vars.orderType as String ++ " Orders received in the request: " ++ sizeOf(payload) as String]' />
+		<db:bulk-insert doc:name="Insert into Orders Table" doc:id="45bd07c7-b691-4c75-bee8-64951a3a3883" config-ref="Database_Config" queryTimeout="${db.queryTimeout}">
+							<db:sql><![CDATA[#[vars.dbQuery]]]></db:sql>
+						</db:bulk-insert>
+		<logger level="DEBUG" doc:name="Order Insertion Successful" doc:id="28300e0b-e828-441e-8947-610522b2cca3" message="Order Insertion Successful" />
+		<set-payload value='#[""]' doc:name="Set Payload" doc:id="f7393858-ee08-4f73-a7b1-e55b89a6c244" />
+	</sub-flow>
+</mule>

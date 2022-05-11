@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+    <flow name="get:\order\(orderId):SalesDBSysAPI-config">
+		<set-variable value="#[attributes.queryParams.operation]" doc:name="operation" doc:id="d89bf4f1-0340-4159-85ad-e867c9ce1c63" variableName="operation"/>
+		<set-variable value="#[attributes.uriParams.orderId]" doc:name="orderId" doc:id="05ca5ae2-7b68-493d-9b0b-8df27bf9d264" variableName="orderId"/>
+		<choice doc:name="Choice" doc:id="0f55fcb3-14e3-44f4-b189-504bfd87dfc0" >
+			<when expression="#[vars.operation == 'retrieveOrder']">
+				<flow-ref doc:name="RetrieveOrderByOrderID_SubFlow" doc:id="452ce218-f65c-4021-94df-d4d6d101e5e0" name="RetrieveOrderByOrderID_SubFlow" />
+			</when>
+			<when expression="#[vars.operation == 'retrieveItems']">
+				<flow-ref doc:name="RetrieveOrderItemsByOrderID_SubFlow" doc:id="da588c7d-2c60-415a-9db9-35f83105a37b" name="RetrieveOrderItemsByOrderID_SubFlow" />
+			</when>
+			<when expression="#[vars.operation == 'retrieveCommission']">
+				<flow-ref doc:name="RetrieveCommissionByOrderID_SubFlow" doc:id="4dd69889-edff-49b3-aa89-20c7b4b70a4c" name="RetrieveCommissionByOrderID_SubFlow"/>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Incorrect Operation Query Params" doc:id="7f4cb1ec-2b3e-4d95-bf00-96608283aa03" >
+					<ee:message >
+						<ee:set-payload resource="dataweaves/IncorrectOperationQueryParam.dwl" />
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+    <flow name="post:\commissions:application\json:SalesDBSysAPI-config">
+		<flow-ref doc:name="InsertCommission_SubFlow" doc:id="8b36797d-f463-4a94-a15b-ad9b7c3b4677" name="InsertCommission_SubFlow"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="044b5a5d-b69c-4cfb-9c90-ccbeeaa717e4" >
+				<set-variable value="500" doc:name="httpStatus" doc:id="5cf1f795-6010-463d-adbc-578bf59591d9" variableName="httpStatus"/>
+				<ee:transform doc:name="Error Response Transformation" doc:id="055412df-88e8-4d3f-a06d-9552a2dd7eb3" >
+					<ee:message >
+						<ee:set-payload resource="dataweaves/errors/InternalServerError.dwl" />
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+
+    </flow>
+    <flow name="post:\orderItems:application\json:SalesDBSysAPI-config">
+		<flow-ref doc:name="InsertOrderItems_SubFlow" doc:id="0911a860-4644-4e74-8a46-8ee004090024" name="InsertOrderItems_SubFlow"/>
+    	<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="2dd8b350-2c3d-454d-a681-86c4bffe1cd4" >
+				<set-variable value="500" doc:name="httpStatus" doc:id="9747f729-4d83-452c-94b7-ddd3db5e674d" variableName="httpStatus"/>
+				<ee:transform doc:name="Error Response Transformation" doc:id="009a695d-bf2a-4bd4-9f34-0e55dbfca804" >
+					<ee:message >
+						<ee:set-payload resource="dataweaves/errors/InternalServerError.dwl" />
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+    <flow name="post:\orders:application\json:SalesDBSysAPI-config">
+        <flow-ref doc:name="CreateOrders_SubFlow" doc:id="335bbeef-0ca3-445a-9364-c21a0c092e79" name="CreateOrders_SubFlow"/>
+        <error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="21cd5b1c-20b6-4d41-a040-ab3ca2abf5b4" >
+				<set-variable value="500" doc:name="httpStatus" doc:id="a4a3b7aa-eaa9-4df2-a473-71e2c0c663ac" variableName="httpStatus"/>
+				<ee:transform doc:name="Error Response Transformation" doc:id="01fbe089-0ae0-4ca9-80cd-e7492e71826e" >
+					<ee:message >
+						<ee:set-payload resource="dataweaves/errors/InternalServerError.dwl" />
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+    </flow>
+</mule>

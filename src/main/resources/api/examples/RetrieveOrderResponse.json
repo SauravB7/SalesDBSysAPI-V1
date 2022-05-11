@@ -1,0 +1,15 @@
+{
+    "order": {
+        "orderId": "ORD124125",
+        "customerId": "CTM1249074",
+        "orderStatus": "Shipped",
+        "purchaseTimestamp": "02-10-2017 10:56",
+        "approvedAt": "02-10-2017 10:56",
+        "deliveredCarrierDate": "02-10-2017 10:56",
+        "deliveredCustomerDate": "02-10-2017 10:56",
+        "estimatedDelivery": "02-10-2017 10:56",
+        "orderValue": 1448,
+        "orderType": "Online",
+        "regionCd": "APAC"
+    }
+}

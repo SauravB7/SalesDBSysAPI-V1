@@ -1,8 +1,8 @@
 # SalesDBSysAPI-V1
 
 ### Setting Up Listener for the Project
-* Use the following Domain project to run this repository - [SDHTTPListener](https://github.com/SauravB7/SDHTTPListener)
-* Or, uncomment the following line in the ***src/main/mule/SalesDBSysAPI-main.xml***
+* Use the following Domain project to run this repository - [**SDHTTPListener**](https://github.com/SauravB7/SDHTTPListener)
+* Or, uncomment the following line in the [***SalesDBSysAPI-main.xml***](./src/main/mule/SalesDBSysAPI-main.xml)
     ```
     <http:listener-config name="SDHTTP_Listener_config">
         <http:listener-connection host="${api.host}" port="${api.port}" readTimeout="${api.listener_timeout}" connectionIdleTimeout="${api.listener_timeout}"/>
@@ -24,7 +24,7 @@ Create the Database with following Table structure
 ![SALESDB_ERD](https://user-images.githubusercontent.com/28842863/167982011-22204f98-5a04-48c0-95bd-fecb4edb4290.png)
 
 ### Setting Up Database Config for the Project
-Update the following parameters with your Database configs in ***src/main/resources/configuration.yaml***. Update the host, port, database, schema and user credentials with your Database details.
+Update the following parameters with your Database configs in [***configuration.yaml***](./src/main/resources/configuration.yaml). Update the host, port, database, schema and user credentials with your Database details.
 ```
 db:
   host: "192.168.15.10"
